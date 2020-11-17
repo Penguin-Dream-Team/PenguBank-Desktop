@@ -1,0 +1,51 @@
+buildscript {
+    repositories {
+        jcenter()
+
+        maven { url 'https://plugins.gradle.org/m2/' }
+    }
+
+    dependencies {
+        classpath "org.openjfx:javafx-plugin:0.0.9"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'kotlin'
+apply plugin: 'application'
+apply plugin: 'org.openjfx.javafxplugin'
+
+group 'club.pengubank'
+version '0.0.1'
+mainClassName = "MainKt"
+
+sourceSets {
+    main.kotlin.srcDirs = main.java.srcDirs = ['src']
+    test.kotlin.srcDirs = test.java.srcDirs = ['test']
+    main.resources.srcDirs = ['resources']
+    test.resources.srcDirs = ['testresources']
+}
+
+javafx {
+    version "15.0.1"
+    modules "javafx.controls", "javafx.base", "javafx.graphics"
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "no.tornado:tornadofx:$tornadofx_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit"
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
