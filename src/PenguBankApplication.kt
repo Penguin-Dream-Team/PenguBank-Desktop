@@ -1,9 +1,22 @@
+import controllers.Store
+import javafx.scene.image.Image
 import javafx.stage.Stage
-import tornadofx.App
-import tornadofx.launch
-import view.MainView
+import tornadofx.*
+import view.userforms.LoginView
 
-class PenguBankApplication: App(MainView::class, Styles::class) {
+class PenguBankApplication : App(LoginView::class, Styles::class) {
+    private val api: Rest by inject()
+    private val store: Store by inject()
+
+    init {
+        api.baseURI = "http://localhost:8080/"
+        api.engine.requestInterceptor = { request ->
+            val token = store.token.token
+            if (token.valueSafe.isNotBlank())
+                request.addHeader("Authorization", "Bearer ${token.value}")
+        }
+    }
+
     override fun start(stage: Stage) {
         with(stage) {
             isResizable = false
@@ -13,3 +26,9 @@ class PenguBankApplication: App(MainView::class, Styles::class) {
 }
 
 fun main() = launch<PenguBankApplication>()
+
+object PenguBankApplicationConstants {
+    val imageLogo = Image("images/logo.jpg")
+    const val USER_FORM_WIDTH = 380.0
+    const val USER_FORM_HEIGHT = 630.0
+}
