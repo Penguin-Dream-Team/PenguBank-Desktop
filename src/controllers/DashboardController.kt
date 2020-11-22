@@ -1,15 +1,8 @@
 package controllers
 
 import javafx.beans.property.SimpleStringProperty
-import models.requests.LoginRequest
-import models.requests.Verify2FARequest
 import tornadofx.*
-import tornadofx.getValue
-import tornadofx.setValue
 import utils.safeExecute
-import view.DashboardView
-import view.userforms.LoginView
-import view.userforms.Verify2FAView
 
 class DashboardController : Controller() {
     private val api: Rest by inject()
@@ -30,6 +23,8 @@ class DashboardController : Controller() {
                 if(response.ok()) {
                     store.account.item = json.jsonModel("data")
                     store.token.item = json.toModel()
+                    store.transactions.items.setAll()
+                    store.transactions.addAll(json.jsonObject("data")!!.jsonArray("transactions")!!.toModel())
                 } else {
                     status = json.string("message") ?: "Oops, something went wrong!"
                 }

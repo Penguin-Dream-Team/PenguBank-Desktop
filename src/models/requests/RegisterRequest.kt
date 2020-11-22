@@ -26,7 +26,8 @@ class RegisterRequest : JsonModel {
     override fun toJSON(json: JsonBuilder) {
         with(json) {
             add("email", email)
-            add("confirmPssword", confirmPassword)
+            add("password", password)
+            add("confirmPassword", confirmPassword)
         }
     }
 }

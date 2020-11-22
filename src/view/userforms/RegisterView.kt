@@ -23,9 +23,11 @@ class RegisterView : View("PenguBank | Create a new account") {
             fieldset("Register", labelPosition = Orientation.VERTICAL) {
                 field("Email") {
                     textfield(model.email).validator {
-                        if (it.isNullOrBlank()) error("The email cannot be blank")
-                        else if (!it.isValidEmail()) error("This is not a valid email")
-                        else null
+                        when {
+                            it.isNullOrBlank() -> error("The email cannot be blank")
+                            !it.isValidEmail() -> error("This is not a valid email")
+                            else -> null
+                        }
                     }
                 }
 
@@ -34,7 +36,13 @@ class RegisterView : View("PenguBank | Create a new account") {
                 }
 
                 field("Confirm Password") {
-                    passwordfield(model.confirmPassword).required()
+                    passwordfield(model.confirmPassword).validator {
+                        when {
+                            it.isNullOrBlank() -> error("The confirmed password cannot be blank")
+                            it != model.password.valueSafe -> error("The passwords need to match")
+                            else -> null
+                        }
+                    }
                 }
             }
 
@@ -44,7 +52,10 @@ class RegisterView : View("PenguBank | Create a new account") {
                 useMaxWidth = true
 
                 action {
-                    // TODO()
+                    runAsyncWithProgress {
+                        model.commit()
+                        loginController.register(model.item)
+                    }
                 }
             }
 

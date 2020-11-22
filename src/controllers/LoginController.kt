@@ -2,6 +2,7 @@ package controllers
 
 import javafx.beans.property.SimpleStringProperty
 import models.requests.LoginRequest
+import models.requests.RegisterRequest
 import models.requests.Verify2FARequest
 import tornadofx.*
 import tornadofx.getValue
@@ -9,6 +10,7 @@ import tornadofx.setValue
 import utils.safeExecute
 import view.DashboardView
 import view.userforms.LoginView
+import view.userforms.RegisterView
 import view.userforms.Verify2FAView
 
 class LoginController : Controller() {
@@ -35,6 +37,25 @@ class LoginController : Controller() {
                         find(LoginView::class).replaceWith<Verify2FAView>(sizeToScene = true, transition = ViewTransition.FadeThrough(.3.seconds))
                     else
                         find(LoginView::class).replaceWith<DashboardView>(sizeToScene = true, centerOnScreen = true, transition = ViewTransition.FadeThrough(.3.seconds))
+                } else {
+                    status = json.string("message") ?: "Oops, something went wrong!"
+                }
+            }
+        }
+    }
+
+    fun register(registerRequest: RegisterRequest) {
+        runLater { status = "" }
+
+        safeExecute(statusProperty) {
+            val response = api.post("register", registerRequest)
+            val json = response.one()
+
+            runLater {
+                if(response.ok()) {
+                    information("Successfully registered") {
+                        find(RegisterView::class).replaceWith<LoginView>(sizeToScene = true, centerOnScreen = true, transition = ViewTransition.FadeThrough(.3.seconds))
+                    }
                 } else {
                     status = json.string("message") ?: "Oops, something went wrong!"
                 }

@@ -15,8 +15,6 @@ class DashboardView : View("PenguBank | Dashboard") {
     val store: Store by inject()
 
     override val root = borderpane {
-        val transactions = FXCollections.observableArrayList("Trans 1", "Trans 2", "Trans 3")
-
         prefWidth = 1080.0
         prefHeight = PenguBankApplicationConstants.USER_FORM_HEIGHT
 
@@ -73,7 +71,7 @@ class DashboardView : View("PenguBank | Dashboard") {
             vbox(10.0) {
                 alignment = Pos.CENTER
 
-                listview(transactions)
+                listview(store.transactions)
                 button("Load More")
             }
         }
