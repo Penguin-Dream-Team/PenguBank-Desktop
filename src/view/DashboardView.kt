@@ -2,8 +2,8 @@ package view
 
 import PenguBankApplicationConstants
 import controllers.DashboardController
+import controllers.Activate2FAController
 import controllers.Store
-import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
@@ -13,6 +13,7 @@ import view.partials.LogoHeader
 class DashboardView : View("PenguBank | Dashboard") {
     val dashboardController: DashboardController by inject()
     val store: Store by inject()
+    val activate2FAController: Activate2FAController by inject()
 
     override val root = borderpane {
         prefWidth = 1080.0
@@ -37,7 +38,15 @@ class DashboardView : View("PenguBank | Dashboard") {
                     hbox(5.0) {
                         alignment = Pos.CENTER
 
-                        button("Settings")
+                        button("Enable 2FA") {
+                            enableWhen(!store.user.enabled2FA)
+                            action {
+                                runAsyncWithProgress {
+                                    activate2FAController.requestActivate2FA()
+                                }
+                            }
+                        }
+
                         button("Logout") {
                             action(store::logout)
                         }
@@ -60,7 +69,7 @@ class DashboardView : View("PenguBank | Dashboard") {
                     alignment = Pos.CENTER_RIGHT
 
                     label("Balance:")
-                    label(store.account.balance) {
+                    label(store.balanceProperty) {
                         style {
                             fontWeight = FontWeight.BOLD
                         }
@@ -72,7 +81,13 @@ class DashboardView : View("PenguBank | Dashboard") {
                 alignment = Pos.CENTER
 
                 listview(store.transactions)
-                button("Load More")
+                button("Refresh") {
+                    action {
+                        runAsyncWithProgress {
+                            dashboardController.refreshDashboard()
+                        }
+                    }
+                }
             }
         }
     }

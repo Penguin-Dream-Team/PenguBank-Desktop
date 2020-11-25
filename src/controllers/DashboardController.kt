@@ -3,6 +3,7 @@ package controllers
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
 import utils.safeExecute
+import utils.toEuros
 
 class DashboardController : Controller() {
     private val api: Rest by inject()
@@ -23,6 +24,7 @@ class DashboardController : Controller() {
                 if(response.ok()) {
                     store.account.item = json.jsonModel("data")
                     store.token.item = json.toModel()
+                    store.balance = store.account.balance.value.toEuros()
                     store.transactions.items.setAll()
                     store.transactions.addAll(json.jsonObject("data")!!.jsonArray("transactions")!!.toModel())
                 } else {

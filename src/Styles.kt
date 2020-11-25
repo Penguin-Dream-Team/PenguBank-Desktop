@@ -33,19 +33,19 @@ class Styles : Stylesheet() {
             prefHeight = PenguBankApplicationConstants.USER_FORM_HEIGHT.px
             padding = box(15.px, 50.px)
 
-            form {
-                alignment = Pos.TOP_CENTER
-                padding = box(20.px, 0.px)
-
-                label and status {
-                    padding = box(10.px, 0.px, 0.px, 0.px)
-                    fontWeight = FontWeight.BOLD
-                    textFill = Color.RED
-                }
-            }
-
             formBottom {
                 alignment = Pos.CENTER
+            }
+        }
+
+        form {
+            alignment = Pos.TOP_CENTER
+            padding = box(20.px, 0.px)
+
+            label and status {
+                padding = box(10.px, 0.px, 0.px, 0.px)
+                fontWeight = FontWeight.BOLD
+                textFill = Color.RED
             }
         }
 
