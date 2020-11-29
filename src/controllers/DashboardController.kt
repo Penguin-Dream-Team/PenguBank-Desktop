@@ -1,9 +1,12 @@
 package controllers
 
 import javafx.beans.property.SimpleStringProperty
+import models.requests.TransactionRequest
 import tornadofx.*
 import utils.safeExecute
 import utils.toEuros
+import view.userforms.LoginView
+import view.userforms.RegisterView
 
 class DashboardController : Controller() {
     private val api: Rest by inject()
@@ -29,6 +32,26 @@ class DashboardController : Controller() {
                     store.transactions.addAll(json.jsonObject("data")!!.jsonArray("transactions")!!.toModel())
                 } else {
                     status = json.string("message") ?: "Oops, something went wrong!"
+                }
+            }
+        }
+    }
+
+    fun newTransaction(transactionRequest: TransactionRequest) {
+        runLater { status = "" }
+
+        safeExecute(statusProperty) {
+            val response = api.put("transaction", transactionRequest)
+            val json = response.one()
+
+            runLater {
+                if(response.ok()) {
+                    information("Transaction Succeeded") {
+                        //find(RegisterView::class).replaceWith<LoginView>(sizeToScene = true, centerOnScreen = true, transition = ViewTransition.FadeThrough(.3.seconds))
+                    }
+                } else {
+                    status = json.string("message") ?: "Oops, something went wrong!"
+                    error(status)
                 }
             }
         }
