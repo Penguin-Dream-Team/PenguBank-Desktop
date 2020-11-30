@@ -3,6 +3,7 @@ import javafx.scene.image.Image
 import javafx.stage.Stage
 import tornadofx.*
 import view.userforms.LoginView
+import javax.bluetooth.LocalDevice
 
 class PenguBankApplication : App(LoginView::class, Styles::class) {
     private val api: Rest by inject()
@@ -21,6 +22,11 @@ class PenguBankApplication : App(LoginView::class, Styles::class) {
         with(stage) {
             isResizable = false
         }
+
+        var bluetoothAddress = LocalDevice.getLocalDevice().bluetoothAddress.toUpperCase().replace("(.{2})".toRegex(), "$1:")
+        bluetoothAddress = bluetoothAddress.substring(0, bluetoothAddress.length - 1)
+        println(bluetoothAddress)
+
         super.start(stage)
     }
 }

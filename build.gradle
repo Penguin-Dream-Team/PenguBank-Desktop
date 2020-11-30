@@ -41,6 +41,10 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     implementation "no.tornado:tornadofx:$tornadofx_version"
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit"
+
+    // Bluetooth
+    implementation 'io.ultreia:bluecove:2.1.1'
+
 }
 
 compileKotlin {
