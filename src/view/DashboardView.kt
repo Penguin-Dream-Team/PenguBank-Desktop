@@ -10,11 +10,13 @@ import javafx.scene.text.FontWeight
 import models.requests.TransactionRequestModel
 import tornadofx.*
 import view.partials.LogoHeader
+import view.settings.Enable2FAModal
+import view.settings.NewTransactionModal
 
 class DashboardView : View("PenguBank | Dashboard") {
     val dashboardController: DashboardController by inject()
-    val store: Store by inject()
     val activate2FAController: Activate2FAController by inject()
+    val store: Store by inject()
     private val model = TransactionRequestModel()
 
     override val root = borderpane {
@@ -67,12 +69,7 @@ class DashboardView : View("PenguBank | Dashboard") {
 
                 left = button("New Transaction") {
                     action {
-                        runAsyncWithProgress {
-                            model.accountDestinationId.value = 9
-                            model.amount.value = 10000
-                            model.commit()
-                            dashboardController.newTransaction(model.item)
-                        }
+                        find<NewTransactionModal>().openModal(resizable = false)
                     }
                 }
 

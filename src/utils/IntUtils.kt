@@ -1,6 +1,5 @@
 package utils
 
-import javafx.beans.property.SimpleIntegerProperty
 import java.text.NumberFormat
 import java.util.*
 
@@ -9,4 +8,9 @@ fun Int.toEuros(): String {
     format.maximumFractionDigits = 0
     format.currency = Currency.getInstance("EUR")
     return format.format(this)
+}
+
+fun String.euroToInt(): Int {
+    val format = NumberFormat.getCurrencyInstance()
+    return format.parse(this).toInt()
 }

@@ -5,6 +5,8 @@ import models.requests.TransactionRequest
 import tornadofx.*
 import utils.safeExecute
 import utils.toEuros
+import view.settings.Enable2FAModal
+import view.settings.NewTransactionModal
 import view.userforms.LoginView
 import view.userforms.RegisterView
 
@@ -15,6 +17,11 @@ class DashboardController : Controller() {
 
     private val statusProperty = SimpleStringProperty()
     var status: String by statusProperty
+
+    fun cancelTransaction() {
+        status = ""
+        find<NewTransactionModal>().close()
+    }
 
     fun refreshDashboard() {
         runLater { status = "" }
