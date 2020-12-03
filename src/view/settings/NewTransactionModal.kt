@@ -2,6 +2,7 @@ package view.settings
 
 import controllers.DashboardController
 import controllers.Store
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Pos
 import javafx.scene.control.ButtonBar
 import javafx.scene.paint.Color
@@ -10,10 +11,12 @@ import models.requests.TransactionRequestModel
 import tornadofx.*
 import utils.euroToInt
 
-class NewTransactionModal : View("PenguBank | New Transaction") {
+class NewTransactionModal() : View("PenguBank | New Transaction") {
     private val store: Store by inject()
     private val model = TransactionRequestModel()
     private val dashboardController: DashboardController by inject()
+    private val transactionQueuedProperty = SimpleBooleanProperty(false)
+    private var transactionQueued  by transactionQueuedProperty
 
     override val root = borderpane {
         prefWidth = 580.0
@@ -27,20 +30,38 @@ class NewTransactionModal : View("PenguBank | New Transaction") {
                 borderColor += box(Color.TRANSPARENT, Color.TRANSPARENT, c("#00000033"), Color.TRANSPARENT)
             }
 
-            label("New Transaction") {
-                style {
-                    fontSize = 18.px
-                    fontWeight = FontWeight.BOLD
-                }
-            }
-
-            label {
-                isWrapText = true
-                style {
-                    fontSize = 14.px
+            if (transactionQueued) {
+                label("Confirm Transaction") {
+                    style {
+                        fontSize = 18.px
+                        fontWeight = FontWeight.BOLD
+                    }
                 }
 
-                text += "Perform a new Transaction."
+                label {
+                    isWrapText = true
+                    style {
+                        fontSize = 14.px
+                    }
+
+                    text += "Scan this QRCode to start a Bluetooth connection and confirm your transaction on your smartphone application."
+                }
+            } else {
+                label("New Transaction") {
+                    style {
+                        fontSize = 18.px
+                        fontWeight = FontWeight.BOLD
+                    }
+                }
+
+                label {
+                    isWrapText = true
+                    style {
+                        fontSize = 14.px
+                    }
+
+                    text += "Perform a new Transaction."
+                }
             }
         }
 
@@ -49,30 +70,35 @@ class NewTransactionModal : View("PenguBank | New Transaction") {
             paddingHorizontal = 40.0
             alignment = Pos.CENTER
 
-            form {
-                fieldset {
-                    field("Accound Destination Id") {
-                        paddingHorizontal = 200.0
+            if (transactionQueued) {
+                field("Isto devia ser um QRCode")
+            }
+            else {
+                form {
+                    fieldset {
+                        field("Accound Destination Id") {
+                            paddingHorizontal = 200.0
 
-                        style {
-                            fontSize = 18.px
+                            style {
+                                fontSize = 18.px
+                            }
+
+                            textfield(model.destinationId) {
+                                filterInput { it.controlNewText.isInt() && it.controlNewText.toInt() >= 0}
+                            }.validator { if (it.isNullOrBlank() || model.destinationId.value < 0) error("Account Id must be non-negative.") else null }
                         }
+                        field(transactionQueued.toString())
+                        field("Amount") {
+                            paddingHorizontal = 200.0
 
-                        textfield(model.accountDestinationId) {
-                            filterInput { it.controlNewText.isInt() && it.controlNewText.toInt() >= 0}
-                        }.validator { if (it.isNullOrBlank() || model.accountDestinationId.value < 0) error("Account Id must be non-negative.") else null }
-                    }
+                            style {
+                                fontSize = 18.px
+                            }
 
-                    field("Amount") {
-                        paddingHorizontal = 200.0
-
-                        style {
-                            fontSize = 18.px
+                            textfield(model.amount) {
+                                filterInput { it.controlNewText.isInt() && it.controlNewText.toInt() <= store.balance.euroToInt() }
+                            }.validator { if (it.isNullOrBlank() || model.amount.value > store.balance.euroToInt()) error("Not enough money to perform the transaction.") else null }
                         }
-
-                        textfield(model.amount) {
-                            filterInput { it.controlNewText.isInt() && it.controlNewText.toInt() <= store.balance.euroToInt() }
-                        }.validator { if (it.isNullOrBlank() || model.amount.value > store.balance.euroToInt()) error("Not enough money to perform the transaction.") else null }
                     }
                 }
             }
@@ -87,18 +113,21 @@ class NewTransactionModal : View("PenguBank | New Transaction") {
                 borderColor += box(c("#00000033"), Color.TRANSPARENT, Color.TRANSPARENT, Color.TRANSPARENT)
             }
 
-            button("Cancel Transaction", type = ButtonBar.ButtonData.CANCEL_CLOSE) {
-                action(dashboardController::cancelTransaction)
-            }
+            if (!transactionQueued) {
+                button("Cancel Transaction", type = ButtonBar.ButtonData.CANCEL_CLOSE) {
+                    action(dashboardController::cancelTransaction)
+                }
 
-            button("Perform Transaction", type = ButtonBar.ButtonData.FINISH) {
-                enableWhen(model.valid)
-                isDefaultButton = true
+                button("Perform Transaction", type = ButtonBar.ButtonData.FINISH) {
+                    enableWhen(model.valid)
+                    isDefaultButton = true
 
-                action {
-                    runAsyncWithProgress {
-                        model.commit()
-                        dashboardController.newTransaction(model.item)
+                    action {
+                        runAsyncWithProgress {
+                            model.commit()
+                            dashboardController.newTransaction(model.item)
+                        }
+                        transactionQueued = true
                     }
                 }
             }
@@ -106,7 +135,7 @@ class NewTransactionModal : View("PenguBank | New Transaction") {
     }
 
     override fun onUndock() {
-        model.accountDestinationId.set(0)
+        model.destinationId.set(0)
         model.amount.set(0)
         model.commit()
         model.clearDecorators()

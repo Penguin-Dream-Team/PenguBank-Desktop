@@ -6,28 +6,28 @@ import javax.json.JsonObject
 
 class TransactionRequest : JsonModel {
 
-    val accountDestinationIdProperty = SimpleIntegerProperty()
-    private var accountDestinationId: Int by accountDestinationIdProperty
+    val destinationIdProperty = SimpleIntegerProperty()
+    private var destinationId: Int by destinationIdProperty
 
     val amountProperty = SimpleIntegerProperty()
     private var amount: Int by amountProperty
 
     override fun updateModel(json: JsonObject) {
         with(json) {
-            accountDestinationId = int("accountDestinationId")!!
+            destinationId = int("destinationId")!!
             amount = int("amount")!!
         }
     }
 
     override fun toJSON(json: JsonBuilder) {
         with(json) {
-            add("accountDestinationId", accountDestinationId)
+            add("destinationId", destinationId)
             add("amount", amount)
         }
     }
 }
 
 class TransactionRequestModel(transactionRequest: TransactionRequest = TransactionRequest()) : ItemViewModel<TransactionRequest>(transactionRequest) {
-    var accountDestinationId = bind(TransactionRequest::accountDestinationIdProperty)
+    var destinationId = bind(TransactionRequest::destinationIdProperty)
     val amount = bind(TransactionRequest::amountProperty)
 }

@@ -2,13 +2,11 @@ package controllers
 
 import javafx.beans.property.SimpleStringProperty
 import models.requests.TransactionRequest
+import models.requests.UpdateTransactionRequest
 import tornadofx.*
 import utils.safeExecute
 import utils.toEuros
-import view.settings.Enable2FAModal
 import view.settings.NewTransactionModal
-import view.userforms.LoginView
-import view.userforms.RegisterView
 
 class DashboardController : Controller() {
     private val api: Rest by inject()
@@ -53,7 +51,28 @@ class DashboardController : Controller() {
 
             runLater {
                 if(response.ok()) {
-                    information("Transaction Succeeded") {
+                    information("Transaction Queued") {
+                        //find(RegisterView::class).replaceWith<LoginView>(sizeToScene = true, centerOnScreen = true, transition = ViewTransition.FadeThrough(.3.seconds))
+                    }
+                } else {
+                    status = json.string("message") ?: "Oops, something went wrong!"
+                    error(status)
+                }
+            }
+        }
+    }
+
+    fun updateTransaction(action: String, updateTransactionRequest: UpdateTransactionRequest) {
+        runLater { status = "" }
+
+        safeExecute(statusProperty) {
+            val response = api.patch("transaction/${action}", updateTransactionRequest)
+            val json = response.one()
+
+            runLater {
+                if(response.ok()) {
+                    val message = if (action == "approve") { "Transaction Approved" } else { "Transaction Canceled" }
+                    information(message) {
                         //find(RegisterView::class).replaceWith<LoginView>(sizeToScene = true, centerOnScreen = true, transition = ViewTransition.FadeThrough(.3.seconds))
                     }
                 } else {

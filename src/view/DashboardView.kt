@@ -7,17 +7,14 @@ import controllers.Store
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
-import models.requests.TransactionRequestModel
 import tornadofx.*
 import view.partials.LogoHeader
-import view.settings.Enable2FAModal
 import view.settings.NewTransactionModal
 
 class DashboardView : View("PenguBank | Dashboard") {
     val dashboardController: DashboardController by inject()
     val activate2FAController: Activate2FAController by inject()
     val store: Store by inject()
-    private val model = TransactionRequestModel()
 
     override val root = borderpane {
         prefWidth = 1080.0
