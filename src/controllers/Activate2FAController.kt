@@ -21,10 +21,12 @@ class Activate2FAController : Controller() {
     val qrCodeURLProperty = SimpleStringProperty()
     var qrCodeURL: String by qrCodeURLProperty
 
+    private lateinit var modal: Enable2FAModal
+
     fun cancel() {
         qrCodeURL = ""
         status = ""
-        find<Enable2FAModal>().close()
+        modal.close()
     }
 
     fun requestActivate2FA() {
@@ -38,7 +40,8 @@ class Activate2FAController : Controller() {
                 try {
                     if (response.ok()) {
                         qrCodeURL = json.jsonObject("data")!!.string("qrcode")!!
-                        find<Enable2FAModal>().openModal(resizable = false)
+                        modal = Enable2FAModal()
+                        modal.openModal(resizable = false)
                     } else
                         throw RuntimeException("Oops, something went wrong!")
                 } catch (e: Throwable) {

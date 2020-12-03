@@ -10,7 +10,7 @@ class PenguBankApplication : App(LoginView::class, Styles::class) {
     private val store: Store by inject()
 
     init {
-        api.baseURI = "http://localhost:8080/"
+        api.baseURI = "https://pengubank.club/"
         api.engine.requestInterceptor = { request ->
             val token = store.token.token
             if (token.valueSafe.isNotBlank())
