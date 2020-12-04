@@ -10,7 +10,4 @@ fun Int.toEuros(): String {
     return format.format(this)
 }
 
-fun String.euroToInt(): Int {
-    val format = NumberFormat.getCurrencyInstance()
-    return format.parse(this).toInt()
-}
+fun String.euroToInt(): Int = this.filter { it.isDigit() }.toInt()

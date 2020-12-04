@@ -23,9 +23,9 @@ class PenguBankApplication : App(LoginView::class, Styles::class) {
             isResizable = false
         }
 
-        /*var bluetoothAddress = LocalDevice.getLocalDevice().bluetoothAddress.toUpperCase().replace("(.{2})".toRegex(), "$1:")
+        var bluetoothAddress = LocalDevice.getLocalDevice().bluetoothAddress.toUpperCase().replace("(.{2})".toRegex(), "$1:")
         bluetoothAddress = bluetoothAddress.substring(0, bluetoothAddress.length - 1)
-        println(bluetoothAddress)*/
+        println(bluetoothAddress)
 
         super.start(stage)
     }
