@@ -7,6 +7,7 @@ import tornadofx.*
 import utils.safeExecute
 import utils.toEuros
 import view.settings.NewTransactionModal
+import view.settings.QueuedTransactionModal
 
 class DashboardController : Controller() {
     private val api: Rest by inject()
@@ -52,7 +53,7 @@ class DashboardController : Controller() {
             runLater {
                 if(response.ok()) {
                     information("Transaction Queued") {
-                        //find(RegisterView::class).replaceWith<LoginView>(sizeToScene = true, centerOnScreen = true, transition = ViewTransition.FadeThrough(.3.seconds))
+                        find<NewTransactionModal>().replaceWith<QueuedTransactionModal>(sizeToScene = true, centerOnScreen = true, transition = ViewTransition.FadeThrough(.3.seconds))
                     }
                 } else {
                     status = json.string("message") ?: "Oops, something went wrong!"
@@ -60,6 +61,12 @@ class DashboardController : Controller() {
                 }
             }
         }
+    }
+
+    fun newQueuedTransaction() {
+        status = ""
+        find<NewTransactionModal>().close()
+        find<QueuedTransactionModal>().openModal(resizable = false)
     }
 
     fun updateTransaction(action: String, updateTransactionRequest: UpdateTransactionRequest) {
