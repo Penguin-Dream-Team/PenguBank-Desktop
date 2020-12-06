@@ -8,7 +8,7 @@ import kotlin.system.exitProcess
 
 object BluetoothUtils {
     fun getBluetoothAddress(): String {
-        var bluetoothAddress: String = ""
+        var bluetoothAddress = ""
 
         try {
             bluetoothAddress = LocalDevice.getLocalDevice().bluetoothAddress.toUpperCase().replace("(.{2})".toRegex(), "$1:")
