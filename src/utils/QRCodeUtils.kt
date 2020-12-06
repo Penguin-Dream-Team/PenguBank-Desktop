@@ -1,10 +1,13 @@
 package utils
 
 import org.apache.http.client.utils.URIBuilder
+import security.SecurityUtils
+import utils.bluetooth.BluetoothUtils
 import java.net.URLEncoder
 import java.nio.charset.Charset
+import java.util.*
 
-private const val QR_GENERATOR_URI_FORMAT = "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=%s"
+private const val QR_GENERATOR_URI_FORMAT = "https://chart.googleapis.com/chart?chs=500x500&chld=M%%7C0&cht=qr&chl=%s"
 private const val issuer = "PenguBank Inc"
 
 fun generateQrCode(accountName: String): String {
@@ -17,11 +20,11 @@ private fun createOTPURL(accountName: String): String {
     require(!issuer.contains(":")) { "Issuer cannot contain the \':\' character." }
 
     val builder = URIBuilder()
-        .setScheme("newTransaction")
-        .setHost("bluetooth")
+        .setScheme("penguBank")
+        .setHost("desktop")
         .setPath("/" + formatLabel(accountName))
-        .setParameter("bluetoothMac", "123:123:123:123:123")
-        .setParameter("kPub", "dummy")
+        .setParameter("bluetoothMac", BluetoothUtils.getBluetoothAddress())
+        .setParameter("kPub", Base64.getEncoder().encodeToString(SecurityUtils.getPublicKey().encoded))
     issuer.let { builder.setParameter("issuer", issuer) }
     return builder.toString()
 }

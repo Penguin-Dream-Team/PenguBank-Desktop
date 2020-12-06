@@ -8,8 +8,10 @@ import javafx.geometry.Pos
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 import tornadofx.*
+import view.dialogs.KeyPasswordDialog
 import view.partials.LogoHeader
 import view.settings.NewTransactionModal
+import view.settings.QueuedTransactionModal
 
 class DashboardView : View("PenguBank | Dashboard") {
     val dashboardController: DashboardController by inject()
@@ -64,9 +66,17 @@ class DashboardView : View("PenguBank | Dashboard") {
             borderpane {
                 alignment = Pos.CENTER_LEFT
 
-                left = button("New Transaction") {
-                    action {
-                        find<NewTransactionModal>().openModal(resizable = false)
+                left = hbox(10) {
+                    button("New Transaction") {
+                        action {
+                            find<NewTransactionModal>().openModal(resizable = false)
+                        }
+                    }
+
+                    button("Connect Mobile") {
+                        action {
+                            find<KeyPasswordDialog>().openModal(resizable = false, block = true)
+                        }
                     }
                 }
 
