@@ -48,7 +48,7 @@ class QueuedTransactionModal() : View("PenguBank | Queued Transaction") {
 
             form {
                 fieldset {
-                    imageview(Image(generateQrCode(store.user.email.toString()), 320.0, 320.0, true, true))
+                    imageview(Image(generateQrCode(store.user.email.valueSafe), 320.0, 320.0, true, true))
                 }
             }
         }

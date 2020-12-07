@@ -1,9 +1,13 @@
 import controllers.Store
 import javafx.scene.image.Image
+import javafx.stage.Modality
 import javafx.stage.Stage
+import javafx.stage.StageStyle
+import security.SecurityUtils
 import tornadofx.*
+import utils.bluetooth.BluetoothUtils
+import view.dialogs.InitDialog
 import view.userforms.LoginView
-import javax.bluetooth.LocalDevice
 
 class PenguBankApplication : App(LoginView::class, Styles::class) {
     private val api: Rest by inject()
@@ -23,15 +27,27 @@ class PenguBankApplication : App(LoginView::class, Styles::class) {
             isResizable = false
         }
 
-        var bluetoothAddress = LocalDevice.getLocalDevice().bluetoothAddress.toUpperCase().replace("(.{2})".toRegex(), "$1:")
-        bluetoothAddress = bluetoothAddress.substring(0, bluetoothAddress.length - 1)
-        println(bluetoothAddress)
+        println(BluetoothUtils.getBluetoothAddress())
 
         super.start(stage)
+
+        if (!SecurityUtils.hasKey()) {
+            stage.close()
+            find<InitDialog>().openModal(
+                stageStyle = StageStyle.UNDECORATED,
+                escapeClosesWindow = false,
+                block = true,
+                resizable = false,
+                modality = Modality.WINDOW_MODAL
+            )
+        }
     }
 }
 
-fun main() = launch<PenguBankApplication>()
+fun main() {
+    //Thread(WaitForDevicesThread).start()
+    launch<PenguBankApplication>()
+}
 
 object PenguBankApplicationConstants {
     val imageLogo = Image("images/logo.jpg")
