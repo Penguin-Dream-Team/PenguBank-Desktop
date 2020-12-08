@@ -1,4 +1,4 @@
-package utils.bluetooth
+package utils
 
 import javafx.scene.control.Alert
 import tornadofx.*

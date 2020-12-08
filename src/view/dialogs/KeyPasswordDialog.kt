@@ -1,17 +1,13 @@
 package view.dialogs
 
-import bluetooth.BluetoothConnectionMaster
 import controllers.BluetoothConnectionController
 import controllers.Store
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Orientation
 import models.KeyStorePasswordViewModel
-import security.SecurityConnection
-import security.SecurityUtils
 import tornadofx.*
 import tornadofx.getValue
 import tornadofx.setValue
-import view.settings.QueuedTransactionModal
 
 class KeyPasswordDialog : View("Insert Global Password") {
 
@@ -58,7 +54,6 @@ class KeyPasswordDialog : View("Insert Global Password") {
                                 close()
                             }
                         } catch (e: Exception) {
-                            e.printStackTrace()
                             runLater {
                                 error("Wrong password") {
                                     clean()

@@ -8,7 +8,7 @@ import org.bouncycastle.crypto.util.PublicKeyFactory
 import java.security.PrivateKey
 import java.security.PublicKey
 
-class SecurityConnection(
+class SignatureConnectionHandler(
     private val privateKey: PrivateKey,
     private val mobilePublicKey: PublicKey
 ) {

@@ -5,7 +5,7 @@ import javafx.stage.Stage
 import javafx.stage.StageStyle
 import security.SecurityUtils
 import tornadofx.*
-import utils.bluetooth.BluetoothUtils
+import utils.BluetoothUtils
 import view.dialogs.InitDialog
 import view.userforms.LoginView
 import kotlin.system.exitProcess

@@ -1,16 +1,15 @@
 package controllers
 
 import bluetooth.BluetoothConnectionMaster
+import bluetooth.models.messages.PendingTransaction
+import bluetooth.models.messages.PendingTransactionOperation
 import javafx.beans.property.SimpleStringProperty
-import org.bouncycastle.jcajce.provider.asymmetric.dh.KeyAgreementSpi
-import org.bouncycastle.jce.provider.BouncyCastleProvider
-import security.SecurityConnection
+import models.requests.UpdateTransactionRequest
 import security.SecurityUtils
+import security.SignatureConnectionHandler
 import tornadofx.*
 import utils.safeExecute
-import view.settings.Enable2FAModal
 import view.settings.QueuedTransactionModal
-import javax.crypto.KeyAgreement
 
 class BluetoothConnectionController : Controller() {
     private val api: Rest by inject()
@@ -29,10 +28,11 @@ class BluetoothConnectionController : Controller() {
         SecurityUtils.init(password)
 
         store.bluetoothConnectionMaster = BluetoothConnectionMaster(
-            SecurityConnection(
+            SignatureConnectionHandler(
                 SecurityUtils.getPrivateKey(password),
                 store.mobilePublicKey
-            )
+            ),
+            this
         )
 
         store.hasBluetoothConnection = true
@@ -64,4 +64,49 @@ class BluetoothConnectionController : Controller() {
         }
     }
 
+    fun updateTransaction(
+        id: Int,
+        signedToken: String,
+        type: PendingTransactionOperation
+    ) {
+        try {
+            val request = UpdateTransactionRequest()
+            request.transactionId = id
+            request.signedToken = signedToken
+
+            val response = if (type == PendingTransactionOperation.APPROVE) {
+                api.put(
+                    "transaction/${type.toString().toLowerCase()}",
+                    request
+                )
+            } else {
+                api.delete(
+                    "transaction/${type.toString().toLowerCase()}",
+                    request
+                )
+            }
+
+
+            if (!response.ok())
+                throw RuntimeException("Oops, something went wrong!")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            throw java.lang.RuntimeException(e.message ?: "Oops, something went wrong!")
+        }
+    }
+
+    fun retrievePendingTransactions(): List<PendingTransaction> {
+        val response = api.get("transactions/pending")
+        val json = response.one()
+
+        try {
+            if (response.ok()) {
+                println(json.jsonArray("data"))
+                return json.jsonArray("data")!!.toModel()
+            } else
+                throw RuntimeException("Oops, something went wrong!")
+        } catch (e: Exception) {
+            throw java.lang.RuntimeException(response.one().string("message") ?: "Oops, something went wrong!")
+        }
+    }
 }

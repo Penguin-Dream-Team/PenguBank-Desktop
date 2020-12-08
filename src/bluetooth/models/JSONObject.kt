@@ -7,4 +7,3 @@ inline fun <reified T : JSONObject> String.toObject(): T = Gson().fromJson(this,
 interface JSONObject {
     fun toJSON(): String = Gson().toJson(this)
 }
-

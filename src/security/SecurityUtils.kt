@@ -18,18 +18,17 @@ import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
 import java.io.File
+import java.io.StringReader
+import java.io.StringWriter
 import java.math.BigInteger
 import java.security.*
 import java.security.cert.X509Certificate
-import java.security.interfaces.RSAMultiPrimePrivateCrtKey
 import java.security.spec.RSAKeyGenParameterSpec
 import java.security.spec.RSAPrivateCrtKeySpec
 import java.security.spec.RSAPublicKeySpec
 import java.util.*
-import org.bouncycastle.util.io.pem.PemReader
-import java.io.StringReader
-import java.io.StringWriter
-import java.security.spec.X509EncodedKeySpec
+import javax.crypto.Cipher
+import javax.crypto.SecretKey
 
 
 object SecurityUtils {
@@ -79,15 +78,18 @@ object SecurityUtils {
         val textReader = StringReader(publicKeyPEM)
         val pemParser = PEMParser(textReader)
         val converter = JcaPEMKeyConverter()
-        return converter.getPublicKey(SubjectPublicKeyInfo.getInstance(
-            pemParser.readObject()
-        ))
+        return converter.getPublicKey(
+            SubjectPublicKeyInfo.getInstance(
+                pemParser.readObject()
+            )
+        )
     }
 
     fun writePublicKey(publicKey: PublicKey): String {
         val stringWriter = StringWriter()
         val pemWriter = JcaPEMWriter(stringWriter)
         pemWriter.writeObject(publicKey)
+        pemWriter.flush()
         return stringWriter.toString()
     }
 
@@ -157,5 +159,17 @@ object SecurityUtils {
 
     private fun save(file: File, keyStore: KeyStore, password: CharArray) {
         keyStore.store(file.outputStream(), password)
+    }
+
+    fun cipher(secretKey: SecretKey, data: String): String {
+        val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+        return org.apache.commons.codec.binary.Base64.encodeBase64String(cipher.doFinal(data.encodeToByteArray()))
+    }
+
+    fun decipher(secretKey: SecretKey, data: String): String {
+        val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
+        cipher.init(Cipher.DECRYPT_MODE, secretKey)
+        return String(cipher.doFinal(org.apache.commons.codec.binary.Base64.decodeBase64(data)))
     }
 }

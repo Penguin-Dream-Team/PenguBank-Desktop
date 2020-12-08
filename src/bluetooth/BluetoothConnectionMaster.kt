@@ -1,8 +1,8 @@
 package bluetooth
 
 import com.intel.bluetooth.BluetoothConsts
-import security.SecurityConnection
-import tornadofx.*
+import controllers.BluetoothConnectionController
+import security.SignatureConnectionHandler
 import java.io.IOException
 import java.lang.Exception
 import javax.bluetooth.DiscoveryAgent
@@ -11,7 +11,10 @@ import javax.microedition.io.Connector
 import javax.microedition.io.StreamConnection
 import javax.microedition.io.StreamConnectionNotifier
 
-class BluetoothConnectionMaster(private val securityConnection: SecurityConnection) {
+class BluetoothConnectionMaster(
+    private val securityConnection: SignatureConnectionHandler,
+    private val bluetoothConnectionController: BluetoothConnectionController
+) {
     private val localDevice = LocalDevice.getLocalDevice()
     private var connection: StreamConnection? = null
     private var notifier: StreamConnectionNotifier? = null
@@ -27,15 +30,18 @@ class BluetoothConnectionMaster(private val securityConnection: SecurityConnecti
 
         while (true) {
             try {
-                println("listening")
                 connection = notifier!!.acceptAndOpen()
-                ConnectionIdentityService(connection!!, securityConnection)
+                BluetoothDiffieHellmanHandshakeService(
+                    securityConnection,
+                    bluetoothConnectionController,
+                    connection!!.openDataInputStream(),
+                    connection!!.openDataOutputStream()
+                )
                 connection?.close()
             } catch (e: IOException) {
-                notifier?.close()
                 connection?.close()
-                println("hello")
-                break
+                if (notifier == null)
+                    break
             }
         }
     }

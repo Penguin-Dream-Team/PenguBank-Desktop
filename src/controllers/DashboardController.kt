@@ -69,24 +69,4 @@ class DashboardController : Controller() {
         find<QueuedTransactionModal>().openModal(resizable = false)
     }
 
-    fun updateTransaction(action: String, updateTransactionRequest: UpdateTransactionRequest) {
-        runLater { status = "" }
-
-        safeExecute(statusProperty) {
-            val response = api.patch("transaction/${action}", updateTransactionRequest)
-            val json = response.one()
-
-            runLater {
-                if(response.ok()) {
-                    val message = if (action == "approve") { "Transaction Approved" } else { "Transaction Canceled" }
-                    information(message) {
-                        //find(RegisterView::class).replaceWith<LoginView>(sizeToScene = true, centerOnScreen = true, transition = ViewTransition.FadeThrough(.3.seconds))
-                    }
-                } else {
-                    status = json.string("message") ?: "Oops, something went wrong!"
-                    error(status)
-                }
-            }
-        }
-    }
 }
