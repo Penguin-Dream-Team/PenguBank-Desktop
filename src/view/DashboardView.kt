@@ -3,6 +3,7 @@ package view
 import PenguBankApplicationConstants
 import controllers.DashboardController
 import controllers.Activate2FAController
+import controllers.BluetoothConnectionController
 import controllers.Store
 import javafx.geometry.Pos
 import javafx.scene.paint.Color
@@ -11,10 +12,10 @@ import tornadofx.*
 import view.dialogs.KeyPasswordDialog
 import view.partials.LogoHeader
 import view.settings.NewTransactionModal
-import view.settings.QueuedTransactionModal
 
 class DashboardView : View("PenguBank | Dashboard") {
     val dashboardController: DashboardController by inject()
+    val bluetoothConnectionController: BluetoothConnectionController by inject()
     val activate2FAController: Activate2FAController by inject()
     val store: Store by inject()
 
@@ -73,9 +74,28 @@ class DashboardView : View("PenguBank | Dashboard") {
                         }
                     }
 
-                    button("Connect Mobile") {
-                        action {
-                            find<KeyPasswordDialog>().openModal(resizable = false, block = true)
+                    stackpane {
+                        button("Stop Bluetooth Local Server") {
+                            visibleWhen(store.hasBluetoothConnectionProperty)
+                            action {
+                                bluetoothConnectionController.stop()
+                            }
+                        }
+
+                        button("Start Bluetooth Local Server") {
+                            visibleWhen(!store.hasBluetoothConnectionProperty)
+                            action {
+                                runAsyncWithProgress {
+                                    bluetoothConnectionController.requestPhonePublicKey()
+                                    runLater {
+                                        if (bluetoothConnectionController.status.isNullOrBlank()) {
+                                            find<KeyPasswordDialog>().openModal(resizable = false, block = true)
+                                        } else {
+                                            error(bluetoothConnectionController.status)
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -92,7 +112,8 @@ class DashboardView : View("PenguBank | Dashboard") {
                 }
             }
 
-            vbox(10.0) {
+            vbox(10.0)
+            {
                 alignment = Pos.CENTER
 
                 listview(store.transactions)

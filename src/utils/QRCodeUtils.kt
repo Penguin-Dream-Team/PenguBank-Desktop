@@ -24,7 +24,7 @@ private fun createOTPURL(accountName: String): String {
         .setHost("desktop")
         .setPath("/" + formatLabel(accountName))
         .setParameter("bluetoothMac", BluetoothUtils.getBluetoothAddress())
-        .setParameter("kPub", Base64.getEncoder().encodeToString(SecurityUtils.getPublicKey().encoded))
+        .setParameter("kPub", SecurityUtils.writePublicKey(SecurityUtils.getPublicKey()))
     issuer.let { builder.setParameter("issuer", issuer) }
     return builder.toString()
 }

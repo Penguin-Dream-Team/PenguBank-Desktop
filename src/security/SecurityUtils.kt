@@ -11,6 +11,9 @@ import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import org.bouncycastle.crypto.util.PrivateKeyFactory
 import org.bouncycastle.jcajce.provider.asymmetric.util.PrimeCertaintyCalculator
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.openssl.PEMParser
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
@@ -18,10 +21,16 @@ import java.io.File
 import java.math.BigInteger
 import java.security.*
 import java.security.cert.X509Certificate
+import java.security.interfaces.RSAMultiPrimePrivateCrtKey
 import java.security.spec.RSAKeyGenParameterSpec
 import java.security.spec.RSAPrivateCrtKeySpec
 import java.security.spec.RSAPublicKeySpec
 import java.util.*
+import org.bouncycastle.util.io.pem.PemReader
+import java.io.StringReader
+import java.io.StringWriter
+import java.security.spec.X509EncodedKeySpec
+
 
 object SecurityUtils {
 
@@ -29,6 +38,7 @@ object SecurityUtils {
     private val home = "${System.getProperty("user.home")}${File.separator}.pengubank${File.separator}"
     private val folder = File(home)
     private var file: File
+    private var needSetup = true
 
     init {
         Security.addProvider(BouncyCastleProvider())
@@ -53,13 +63,33 @@ object SecurityUtils {
             keyStore.setCertificateEntry("pengubank-cert", certificate.first())
             save(file, keyStore, passwordCharArray)
         }
+        needSetup = false
     }
 
-    fun getPublicKey(): PublicKey =
-        keyStore.getCertificate("pengubank-cert").publicKey
+    fun getPublicKey(): PublicKey {
+        return keyStore.getCertificate("pengubank-cert").publicKey
+    }
 
-    fun getPrivateKey(password: String): PrivateKey =
-        keyStore.getKey("pengubank-privkey", password.toCharArray()) as PrivateKey
+    fun getPrivateKey(password: String): PrivateKey {
+        if (needSetup) init(password)
+        return keyStore.getKey("pengubank-privkey", password.toCharArray()) as PrivateKey
+    }
+
+    fun parsePublicKey(publicKeyPEM: String): PublicKey {
+        val textReader = StringReader(publicKeyPEM)
+        val pemParser = PEMParser(textReader)
+        val converter = JcaPEMKeyConverter()
+        return converter.getPublicKey(SubjectPublicKeyInfo.getInstance(
+            pemParser.readObject()
+        ))
+    }
+
+    fun writePublicKey(publicKey: PublicKey): String {
+        val stringWriter = StringWriter()
+        val pemWriter = JcaPEMWriter(stringWriter)
+        pemWriter.writeObject(publicKey)
+        return stringWriter.toString()
+    }
 
     private fun generateCertificate(keyPair: KeyPair): X509Certificate {
         val dnName = X500Name("CN=PenguBank")

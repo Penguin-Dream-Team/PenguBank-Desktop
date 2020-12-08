@@ -8,10 +8,11 @@ import tornadofx.*
 import utils.bluetooth.BluetoothUtils
 import view.dialogs.InitDialog
 import view.userforms.LoginView
+import kotlin.system.exitProcess
 
 class PenguBankApplication : App(LoginView::class, Styles::class) {
     private val api: Rest by inject()
-    private val store: Store by inject()
+    val store: Store by inject()
 
     init {
         api.baseURI = "https://pengubank.club"
@@ -30,7 +31,6 @@ class PenguBankApplication : App(LoginView::class, Styles::class) {
         println(BluetoothUtils.getBluetoothAddress())
 
         super.start(stage)
-
         if (!SecurityUtils.hasKey()) {
             stage.close()
             find<InitDialog>().openModal(
@@ -45,8 +45,8 @@ class PenguBankApplication : App(LoginView::class, Styles::class) {
 }
 
 fun main() {
-    //Thread(WaitForDevicesThread).start()
-    launch<PenguBankApplication>()
+     launch<PenguBankApplication>()
+    exitProcess(0)
 }
 
 object PenguBankApplicationConstants {

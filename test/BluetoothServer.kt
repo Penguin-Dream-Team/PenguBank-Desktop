@@ -1,6 +1,6 @@
 import utils.bluetooth.WaitForDevicesThread
 
 fun main() {
-    Thread(WaitForDevicesThread).start()
+    //Thread(WaitForDevicesThread).start()
 }
 

@@ -1,8 +1,12 @@
 package view.dialogs
 
+import bluetooth.BluetoothConnectionMaster
+import controllers.BluetoothConnectionController
+import controllers.Store
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Orientation
 import models.KeyStorePasswordViewModel
+import security.SecurityConnection
 import security.SecurityUtils
 import tornadofx.*
 import tornadofx.getValue
@@ -12,6 +16,9 @@ import view.settings.QueuedTransactionModal
 class KeyPasswordDialog : View("Insert Global Password") {
 
     private val model = KeyStorePasswordViewModel()
+    private val bluetoothConnectionController: BluetoothConnectionController by inject()
+
+    private val store: Store by inject()
 
     private val enabledProperty = SimpleBooleanProperty(true)
     var enabled by enabledProperty
@@ -44,25 +51,34 @@ class KeyPasswordDialog : View("Insert Global Password") {
                     enabled = false
                     runAsyncWithProgress {
                         model.commit()
+
                         try {
-                            SecurityUtils.init(model.password.valueSafe)
+                            bluetoothConnectionController.start(model.password.valueSafe)
                             runLater {
-                                find<QueuedTransactionModal>().openModal(resizable = false, block = true)
                                 close()
                             }
-                        } catch (_: Exception) {
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                             runLater {
                                 error("Wrong password") {
-                                    model.password.value = ""
-                                    model.commit()
-                                    model.clearDecorators()
+                                    clean()
                                 }
                             }
-                            enabled = true
                         }
                     }
                 }
             }
         }
+    }
+
+    private fun clean() {
+        model.password.value = ""
+        model.commit()
+        model.clearDecorators()
+        enabled = true
+    }
+
+    override fun onUndock() {
+        clean()
     }
 }
