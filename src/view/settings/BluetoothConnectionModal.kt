@@ -8,7 +8,7 @@ import javafx.scene.text.FontWeight
 import tornadofx.*
 import utils.generateQrCode
 
-class QueuedTransactionModal() : View("PenguBank | Queued Transaction") {
+class BluetoothConnectionModal() : View("PenguBank | Connect to this Bluetooth Server") {
     private val store: Store by inject()
 
     override val root = borderpane {
@@ -23,7 +23,7 @@ class QueuedTransactionModal() : View("PenguBank | Queued Transaction") {
                 borderColor += box(Color.TRANSPARENT, Color.TRANSPARENT, c("#00000033"), Color.TRANSPARENT)
             }
 
-            label("Confirm Transaction") {
+            label("Connect to this Bluetooth Device") {
                 style {
                     fontSize = 18.px
                     fontWeight = FontWeight.BOLD
@@ -36,7 +36,7 @@ class QueuedTransactionModal() : View("PenguBank | Queued Transaction") {
                     fontSize = 14.px
                 }
 
-                text += "Scan this QRCode to start a Bluetooth connection and confirm your transaction on your smartphone application."
+                text += "Scan this QRCode to start a Bluetooth connection and confirm your pending transactions on your smartphone application."
             }
         }
 

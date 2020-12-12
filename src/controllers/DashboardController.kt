@@ -2,12 +2,10 @@ package controllers
 
 import javafx.beans.property.SimpleStringProperty
 import models.requests.TransactionRequest
-import models.requests.UpdateTransactionRequest
 import tornadofx.*
 import utils.safeExecute
 import utils.toEuros
 import view.settings.NewTransactionModal
-import view.settings.QueuedTransactionModal
 
 class DashboardController : Controller() {
     private val api: Rest by inject()
@@ -30,12 +28,20 @@ class DashboardController : Controller() {
             val json = response.one()
 
             runLater {
-                if(response.ok()) {
+                if (response.ok()) {
                     store.account.item = json.jsonModel("data")
                     store.token.item = json.toModel()
                     store.balance = store.account.balance.value.toEuros()
-                    store.transactions.items.setAll()
+
+                    store.transactions.clear()
                     store.transactions.addAll(json.jsonObject("data")!!.jsonArray("transactions")!!.toModel())
+                    store.hasTransactions = store.transactions.size > 0
+
+                    store.pendingTransactions.clear()
+                    store.pendingTransactions.addAll(
+                        json.jsonObject("data")!!.jsonArray("queuedTransactions")!!.toModel()
+                    )
+                    store.hasPendingTransactions = store.pendingTransactions.size > 0
                 } else {
                     status = json.string("message") ?: "Oops, something went wrong!"
                 }
@@ -51,22 +57,17 @@ class DashboardController : Controller() {
             val json = response.one()
 
             runLater {
-                if(response.ok()) {
-                    information("Transaction Queued") {
-                        find<NewTransactionModal>().replaceWith<QueuedTransactionModal>(sizeToScene = true, centerOnScreen = true, transition = ViewTransition.FadeThrough(.3.seconds))
-                    }
+                if (response.ok()) {
+                    store.token.item = json.toModel()
+                    information("Transaction Queued")
+                    find<NewTransactionModal>().close()
                 } else {
                     status = json.string("message") ?: "Oops, something went wrong!"
                     error(status)
                 }
             }
         }
-    }
 
-    fun newQueuedTransaction() {
-        status = ""
-        find<NewTransactionModal>().close()
-        find<QueuedTransactionModal>().openModal(resizable = false)
+        refreshDashboard()
     }
-
 }

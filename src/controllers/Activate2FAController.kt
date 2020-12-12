@@ -18,7 +18,7 @@ class Activate2FAController : Controller() {
     val statusProperty = SimpleStringProperty()
     var status: String by statusProperty
 
-    val qrCodeURLProperty = SimpleStringProperty()
+    private val qrCodeURLProperty = SimpleStringProperty()
     var qrCodeURL: String by qrCodeURLProperty
 
     private lateinit var modal: Enable2FAModal
@@ -40,6 +40,8 @@ class Activate2FAController : Controller() {
                 try {
                     if (response.ok()) {
                         qrCodeURL = json.jsonObject("data")!!.string("qrcode")!!
+                        store.token.item = json.toModel()
+
                         modal = Enable2FAModal()
                         modal.openModal(resizable = false)
                     } else
@@ -57,13 +59,12 @@ class Activate2FAController : Controller() {
         safeExecute(statusProperty) {
             val response = api.put("activate", verify2FARequest)
             val json = response.one()
-            println(verify2FARequest.toJSON().toPrettyString())
-            println(json.toPrettyString())
 
             runLater {
                 if(response.ok()) {
                     store.user.item = json.jsonModel("data")
                     store.token.item = json.toModel()
+
                     information("Successfully verified! Enabled 2FA") {
                         cancel()
                     }

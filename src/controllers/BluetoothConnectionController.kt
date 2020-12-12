@@ -1,15 +1,16 @@
 package controllers
 
 import bluetooth.BluetoothConnectionMaster
-import bluetooth.models.messages.PendingTransaction
+import models.PendingTransaction
 import bluetooth.models.messages.PendingTransactionOperation
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleStringProperty
 import models.requests.UpdateTransactionRequest
 import security.SecurityUtils
 import security.SignatureConnectionHandler
 import tornadofx.*
 import utils.safeExecute
-import view.settings.QueuedTransactionModal
+import view.settings.BluetoothConnectionModal
 
 class BluetoothConnectionController : Controller() {
     private val api: Rest by inject()
@@ -19,9 +20,13 @@ class BluetoothConnectionController : Controller() {
     private val statusProperty = SimpleStringProperty()
     var status: String by statusProperty
 
+    val connectedProperty = SimpleBooleanProperty(false)
+    var connected: Boolean by connectedProperty
+
     fun stop() {
         store.bluetoothConnectionMaster?.quit()
         store.hasBluetoothConnection = false
+        connected = false
     }
 
     fun start(password: String) {
@@ -39,7 +44,7 @@ class BluetoothConnectionController : Controller() {
         store.bluetoothConnectionMaster?.startServer()
 
         runLater {
-            find<QueuedTransactionModal>().openModal(resizable = false, block = true)
+            find<BluetoothConnectionModal>().openModal(resizable = false, block = true)
         }
     }
 
@@ -53,6 +58,7 @@ class BluetoothConnectionController : Controller() {
             runLater {
                 try {
                     if (response.ok()) {
+                        store.token.item = json.toModel()
                         store.mobilePublicKey =
                             SecurityUtils.parsePublicKey(json.jsonObject("data")!!.string("phonePublicKey")!!)
                     } else
@@ -86,9 +92,11 @@ class BluetoothConnectionController : Controller() {
                 )
             }
 
-
             if (!response.ok())
                 throw RuntimeException("Oops, something went wrong!")
+            else {
+                store.token.item = response.one().toModel()
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             throw java.lang.RuntimeException(e.message ?: "Oops, something went wrong!")
@@ -101,7 +109,7 @@ class BluetoothConnectionController : Controller() {
 
         try {
             if (response.ok()) {
-                println(json.jsonArray("data"))
+                store.token.item = json.toModel()
                 return json.jsonArray("data")!!.toModel()
             } else
                 throw RuntimeException("Oops, something went wrong!")

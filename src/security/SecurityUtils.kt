@@ -1,14 +1,18 @@
 package security
 
+import org.apache.commons.codec.binary.Base64
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
 import org.bouncycastle.cert.X509v1CertificateBuilder
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
+import org.bouncycastle.crypto.digests.SHA512Digest
 import org.bouncycastle.crypto.generators.RSAKeyPairGenerator
 import org.bouncycastle.crypto.params.RSAKeyGenerationParameters
 import org.bouncycastle.crypto.params.RSAKeyParameters
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
+import org.bouncycastle.crypto.signers.RSADigestSigner
 import org.bouncycastle.crypto.util.PrivateKeyFactory
+import org.bouncycastle.crypto.util.PublicKeyFactory
 import org.bouncycastle.jcajce.provider.asymmetric.util.PrimeCertaintyCalculator
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.openssl.PEMParser
@@ -29,6 +33,7 @@ import java.security.spec.RSAPublicKeySpec
 import java.util.*
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
+import javax.crypto.spec.GCMParameterSpec
 
 
 object SecurityUtils {
@@ -63,6 +68,29 @@ object SecurityUtils {
             save(file, keyStore, passwordCharArray)
         }
         needSetup = false
+    }
+
+    fun signData(data: String, privateKey: PrivateKey): String {
+        val privateKeyParameter = PrivateKeyFactory.createKey(privateKey.encoded)
+        val dataBytes = data.encodeToByteArray()
+        val signer = RSADigestSigner(SHA512Digest())
+
+        signer.init(true, privateKeyParameter)
+        signer.update(dataBytes, 0, dataBytes.size)
+
+        val signature = signer.generateSignature()
+        return Base64.encodeBase64String(signature)
+    }
+
+    fun verifySignature(data: String, signature: String, publicKey: PublicKey): Boolean {
+        val dataBytes = data.encodeToByteArray()
+        val publicKeyParameter = PublicKeyFactory.createKey(publicKey.encoded)
+
+        val signer = RSADigestSigner(SHA512Digest())
+        signer.init(false, publicKeyParameter)
+        signer.update(dataBytes, 0, dataBytes.size)
+
+        return signer.verifySignature(Base64.decodeBase64(signature))
     }
 
     fun getPublicKey(): PublicKey {
@@ -164,12 +192,32 @@ object SecurityUtils {
     fun cipher(secretKey: SecretKey, data: String): String {
         val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
         cipher.init(Cipher.ENCRYPT_MODE, secretKey)
-        return org.apache.commons.codec.binary.Base64.encodeBase64String(cipher.doFinal(data.encodeToByteArray()))
+        return Base64.encodeBase64String(cipher.doFinal(data.encodeToByteArray()))
     }
 
     fun decipher(secretKey: SecretKey, data: String): String {
         val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
         cipher.init(Cipher.DECRYPT_MODE, secretKey)
-        return String(cipher.doFinal(org.apache.commons.codec.binary.Base64.decodeBase64(data)))
+        return String(cipher.doFinal(Base64.decodeBase64(data)))
+    }
+
+    fun gcmCipher(secretKey: SecretKey, data: String): Pair<String, GCMParameterSpec> {
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+        val parameterSpec = cipher.parameters.getParameterSpec(GCMParameterSpec::class.java)
+        return Pair(
+            Base64.encodeBase64String(cipher.doFinal(data.encodeToByteArray())),
+            parameterSpec
+        )
+    }
+
+    fun gcmDecipher(secretKey: SecretKey, data: String, iv: ByteArray, tagLen: Int): String {
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+        cipher.init(
+            Cipher.DECRYPT_MODE,
+            secretKey,
+            GCMParameterSpec(tagLen, iv)
+        )
+        return String(cipher.doFinal(Base64.decodeBase64(data)))
     }
 }

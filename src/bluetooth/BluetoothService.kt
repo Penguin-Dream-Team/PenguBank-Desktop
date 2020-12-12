@@ -28,18 +28,23 @@ abstract class BluetoothService(
     }
 
     protected fun <T : JSONObject> cipherAndSendMessage(secretKey: SecretKey, data: T) {
-        val cipheredData = SecurityUtils.cipher(secretKey, data.toJSON())
-        val message = BluetoothMessage(cipheredData, securityConnection.signData(data.toJSON()))
+        val (cipheredData, parameterSpec) = SecurityUtils.gcmCipher(secretKey, data.toJSON())
+        val message = BluetoothMessage(
+            cipheredData,
+            securityConnection.signData(data.toJSON()),
+            iv = parameterSpec.iv,
+            tLen = parameterSpec.tLen
+        )
         outputStream.writeUTF(message.toJSON())
         outputStream.flush()
+        println("SENT: ${message.data}")
     }
 
     protected fun receiveAndDecipherMessage(secretKey: SecretKey): JSONObject {
-        println("before")
         val message = inputStream.readUTF().toObject<BluetoothMessage>()
         println(message)
 
-        val data = SecurityUtils.decipher(secretKey, message.data)
+        val data = SecurityUtils.gcmDecipher(secretKey, message.data, iv = message.iv!!, tagLen = message.tLen!!)
         println(data)
 
         if (!securityConnection.verifySignature(data, message.signature))
@@ -48,19 +53,20 @@ abstract class BluetoothService(
         // expect to receive always
         val receivedData = data.toObject<UpdatePendingTransactionRequest>()
 
-        if(usedNonces.contains(receivedData.nonce))
+        if (usedNonces.contains(receivedData.nonce))
             throw BluetoothMessageDuplicateNonceFailedException
 
         usedNonces.add(receivedData.nonce)
 
         // if not update request, then the id is always 0
-        if(receivedData.id == 0)
+        if (receivedData.id == 0)
             return RetrievePendingTransactionsRequest(receivedData.nonce)
 
+        println("RECEIVED: ${message.data}")
         return receivedData
     }
 
-    protected inline fun <reified T: JSONObject> receiveMessage(): T {
+    protected inline fun <reified T : JSONObject> receiveMessage(): T {
         val message = inputStream.readUTF().toObject<BluetoothMessage>()
         if (!securityConnection.verifySignature(message.data, message.signature))
             throw BluetoothMessageSignatureFailedException

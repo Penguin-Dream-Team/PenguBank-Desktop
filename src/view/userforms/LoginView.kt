@@ -69,10 +69,12 @@ class LoginView : View("PenguBank | Login to account") {
     }
 
     // TODO: TEMPORARY -> FOR TESTING ONLY
+/*
     override fun onDock() {
         model.email.value = "a@b.c"
         model.password.value = "password"
     }
+*/
 
     private fun clearState() {
         loginController.status = ""

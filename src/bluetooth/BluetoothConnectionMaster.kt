@@ -3,6 +3,8 @@ package bluetooth
 import com.intel.bluetooth.BluetoothConsts
 import controllers.BluetoothConnectionController
 import security.SignatureConnectionHandler
+import java.io.DataInputStream
+import java.io.DataOutputStream
 import java.io.IOException
 import java.lang.Exception
 import javax.bluetooth.DiscoveryAgent
@@ -18,6 +20,8 @@ class BluetoothConnectionMaster(
     private val localDevice = LocalDevice.getLocalDevice()
     private var connection: StreamConnection? = null
     private var notifier: StreamConnectionNotifier? = null
+    private var inputStream: DataInputStream? = null
+    private var outputStream: DataOutputStream? = null
 
     private var thread: Thread = Thread {
         if (localDevice.discoverable != DiscoveryAgent.GIAC)
@@ -30,12 +34,14 @@ class BluetoothConnectionMaster(
 
         while (true) {
             try {
+                if (notifier == null) break
                 connection = notifier!!.acceptAndOpen()
+                inputStream = connection!!.openDataInputStream()
+                outputStream = connection!!.openDataOutputStream()
                 BluetoothDiffieHellmanHandshakeService(
                     securityConnection,
                     bluetoothConnectionController,
-                    connection!!.openDataInputStream(),
-                    connection!!.openDataOutputStream()
+                    inputStream!!, outputStream!!
                 )
                 connection?.close()
             } catch (e: IOException) {
@@ -52,6 +58,9 @@ class BluetoothConnectionMaster(
 
     fun quit() {
         try {
+            bluetoothConnectionController.connected = false
+            inputStream?.close()
+            outputStream?.close()
             connection?.close()
             notifier?.close()
             connection = null

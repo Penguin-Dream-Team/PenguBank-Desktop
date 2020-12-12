@@ -42,6 +42,8 @@ class BluetoothDiffieHellmanHandshakeService(
             }
         } while (signatureFailed)
 
+        bluetoothConnectionController.connected = true
+
         // start secured communication protocol with newly generated shared secret key
         BluetoothCommunicationService(
             secretKey,
@@ -50,5 +52,7 @@ class BluetoothDiffieHellmanHandshakeService(
             inputStream,
             outputStream
         )
+
+        bluetoothConnectionController.connected = false
     }
 }

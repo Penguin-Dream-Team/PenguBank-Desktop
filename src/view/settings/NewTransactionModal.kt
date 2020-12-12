@@ -9,6 +9,7 @@ import javafx.scene.text.FontWeight
 import models.requests.TransactionRequestModel
 import tornadofx.*
 import utils.euroToInt
+import utils.isValidEmail
 
 class NewTransactionModal() : View("PenguBank | New Transaction") {
     private val store: Store by inject()
@@ -51,16 +52,18 @@ class NewTransactionModal() : View("PenguBank | New Transaction") {
 
             form {
                 fieldset {
-                    field("Accound Destination Id") {
+                    field("Accound Destination Email") {
                         paddingHorizontal = 200.0
 
                         style {
                             fontSize = 18.px
                         }
 
-                        textfield(model.destinationId) {
-                            filterInput { it.controlNewText.isInt() && it.controlNewText.toInt() >= 0}
-                        }.validator { if (it.isNullOrBlank() || model.destinationId.value < 0) error("Account Id must be non-negative.") else null }
+                        textfield(model.destinationEmail).validator {
+                            if (it.isNullOrBlank()) error("The email cannot be blank")
+                            else if (!it.isValidEmail()) error("This is not a valid email")
+                            else null
+                        }
                     }
 
                     field("Amount") {
@@ -87,7 +90,7 @@ class NewTransactionModal() : View("PenguBank | New Transaction") {
                 borderColor += box(c("#00000033"), Color.TRANSPARENT, Color.TRANSPARENT, Color.TRANSPARENT)
             }
 
-            button("Cancel Transaction", type = ButtonBar.ButtonData.CANCEL_CLOSE) {
+            button("Cancel", type = ButtonBar.ButtonData.CANCEL_CLOSE) {
                 action(dashboardController::cancelTransaction)
             }
 
@@ -106,7 +109,7 @@ class NewTransactionModal() : View("PenguBank | New Transaction") {
     }
 
     override fun onUndock() {
-        model.destinationId.set(0)
+        model.destinationEmail.set("")
         model.amount.set(0)
         model.commit()
         model.clearDecorators()
