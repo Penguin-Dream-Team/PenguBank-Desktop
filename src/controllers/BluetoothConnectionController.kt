@@ -98,7 +98,6 @@ class BluetoothConnectionController : Controller() {
                 store.token.item = response.one().toModel()
             }
         } catch (e: Exception) {
-            e.printStackTrace()
             throw java.lang.RuntimeException(e.message ?: "Oops, something went wrong!")
         }
     }

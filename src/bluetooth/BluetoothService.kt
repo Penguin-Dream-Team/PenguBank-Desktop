@@ -40,10 +40,8 @@ abstract class BluetoothService(
 
     protected fun receiveAndDecipherMessage(secretKey: SecretKey): JSONObject {
         val message = inputStream.readUTF().toObject<BluetoothMessage>()
-        println(message)
 
         val data = SecurityUtils.gcmDecipher(secretKey, message.data, iv = message.iv!!, tagLen = message.tLen!!)
-        println(data)
 
         if (!securityConnection.verifySignature(data, message.signature))
             throw BluetoothMessageSignatureFailedException

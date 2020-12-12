@@ -175,7 +175,11 @@ class DashboardView : View("PenguBank | Dashboard") {
                         }
 
                         text("No transactions") {
-                            visibleWhen(!store.hasTransactionsProperty)
+                            visibleWhen(showingTransactionsProperty.and(!store.hasTransactionsProperty))
+                        }
+
+                        text("No Pending transactions") {
+                            visibleWhen(showingTransactionsProperty.not().and(!store.hasPendingTransactionsProperty))
                         }
                     }
 

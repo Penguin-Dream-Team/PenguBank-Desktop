@@ -48,14 +48,13 @@ class KeyPasswordDialog : View("Insert Global Password") {
 
                         try {
                             bluetoothConnectionController.start(model.password.valueSafe)
-                            runLater {
-                                close()
-                            }
                         } catch (e: Exception) {
                             runLater {
-                                error("Wrong password") {
-                                    clean()
-                                }
+                                error("Wrong password")
+                            }
+                        } finally {
+                            runLater {
+                                close()
                             }
                         }
                     }
