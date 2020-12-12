@@ -1,6 +1,8 @@
 package models
 
 import tornadofx.*
+import utils.toEuros
+import utils.toPrettyDate
 import javax.json.JsonObject
 
 class PendingTransaction : JsonModel {
@@ -13,8 +15,7 @@ class PendingTransaction : JsonModel {
     private var token: String? = null
 
     override fun toString() =
-        "Pending Transaction #$id | To: $destination | Amount: $amount | Created: $createdAt | Expired: $expiredAt"
-
+        "To: $destination | Amount: ${amount!!.toEuros()} | Created: ${createdAt!!.toPrettyDate()} | Expires: ${expiredAt!!.toPrettyDate()}"
 
     override fun toJSON(json: JsonBuilder) {
         with(json) {

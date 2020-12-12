@@ -14,8 +14,6 @@ class KeyPasswordDialog : View("Insert Global Password") {
     private val model = KeyStorePasswordViewModel()
     private val bluetoothConnectionController: BluetoothConnectionController by inject()
 
-    private val store: Store by inject()
-
     private val enabledProperty = SimpleBooleanProperty(true)
     var enabled by enabledProperty
 

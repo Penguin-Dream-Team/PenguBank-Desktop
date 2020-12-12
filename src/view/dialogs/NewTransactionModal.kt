@@ -1,7 +1,8 @@
-package view.settings
+package view.dialogs
 
 import controllers.DashboardController
 import controllers.Store
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Pos
 import javafx.scene.control.ButtonBar
 import javafx.scene.paint.Color
@@ -15,6 +16,9 @@ class NewTransactionModal() : View("PenguBank | New Transaction") {
     private val store: Store by inject()
     private val model = TransactionRequestModel()
     private val dashboardController: DashboardController by inject()
+
+    private val enabledProperty = SimpleBooleanProperty(true)
+    var enabled by enabledProperty
 
     override val root = borderpane {
         prefWidth = 580.0
@@ -95,13 +99,15 @@ class NewTransactionModal() : View("PenguBank | New Transaction") {
             }
 
             button("Perform Transaction", type = ButtonBar.ButtonData.FINISH) {
-                enableWhen(model.valid)
+                enableWhen(enabledProperty.and(model.valid))
                 isDefaultButton = true
 
                 action {
+                    enabled = false
                     runAsyncWithProgress {
                         model.commit()
                         dashboardController.newTransaction(model.item)
+                        enabled = true
                     }
                 }
             }

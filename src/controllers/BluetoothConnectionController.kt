@@ -10,7 +10,7 @@ import security.SecurityUtils
 import security.SignatureConnectionHandler
 import tornadofx.*
 import utils.safeExecute
-import view.settings.BluetoothConnectionModal
+import view.dialogs.BluetoothConnectionModal
 
 class BluetoothConnectionController : Controller() {
     private val api: Rest by inject()

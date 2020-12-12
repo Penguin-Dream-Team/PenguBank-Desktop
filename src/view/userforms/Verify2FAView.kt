@@ -3,6 +3,7 @@ package view.userforms
 import Styles
 import controllers.LoginController
 import controllers.Store
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Orientation
 import models.requests.Verify2FARequest
 import models.requests.Verify2FARequestModel
@@ -15,6 +16,9 @@ class Verify2FAView : View("PenguBank | Verify Authentication") {
     private val store: Store by inject()
 
     private val model = Verify2FARequestModel()
+
+    private val enabledProperty = SimpleBooleanProperty(true)
+    var enabled by enabledProperty
 
     override val root = borderpane {
         addClass(Styles.userFormView)
@@ -35,14 +39,16 @@ class Verify2FAView : View("PenguBank | Verify Authentication") {
             }
 
             button("Verify") {
-                enableWhen(model.valid)
+                enableWhen(enabledProperty.and(model.valid))
                 isDefaultButton = true
                 useMaxWidth = true
 
                 action {
+                    enabled = false
                     runAsyncWithProgress {
                         model.commit()
                         loginController.verify2FA(model.item)
+                        enabled = true
                     }
                 }
             }

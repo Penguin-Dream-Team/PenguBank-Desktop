@@ -2,6 +2,7 @@ package view.userforms
 
 import Styles
 import controllers.LoginController
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Orientation
 import models.requests.LoginRequest
 import models.requests.LoginRequestModel
@@ -13,6 +14,9 @@ class LoginView : View("PenguBank | Login to account") {
 
     private val loginController: LoginController by inject()
     private val model = LoginRequestModel(LoginRequest())
+
+    private val enabledProperty = SimpleBooleanProperty(true)
+    var enabled by enabledProperty
 
     override val root = borderpane {
         addClass(Styles.userFormView)
@@ -35,14 +39,16 @@ class LoginView : View("PenguBank | Login to account") {
             }
 
             button("Login") {
-                enableWhen(model.valid)
+                enableWhen(enabledProperty.and(model.valid))
                 isDefaultButton = true
                 useMaxWidth = true
 
                 action {
+                    enabled = false
                     runAsyncWithProgress {
                         model.commit()
                         loginController.requestLogin(model.item)
+                        enabled = true
                     }
                 }
             }

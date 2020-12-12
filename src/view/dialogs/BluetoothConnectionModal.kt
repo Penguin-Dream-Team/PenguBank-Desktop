@@ -1,4 +1,4 @@
-package view.settings
+package view.dialogs
 
 import controllers.Store
 import javafx.geometry.Pos

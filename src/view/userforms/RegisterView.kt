@@ -2,6 +2,7 @@ package view.userforms
 
 import Styles
 import controllers.LoginController
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Orientation
 import models.requests.RegisterRequest
 import models.requests.RegisterRequestModel
@@ -13,6 +14,9 @@ class RegisterView : View("PenguBank | Create a new account") {
 
     private val loginController: LoginController by inject()
     private val model = RegisterRequestModel()
+
+    private val enabledProperty = SimpleBooleanProperty(true)
+    var enabled by enabledProperty
 
     override val root = borderpane {
         addClass(Styles.userFormView)
@@ -47,14 +51,16 @@ class RegisterView : View("PenguBank | Create a new account") {
             }
 
             button("Register") {
-                enableWhen(model.valid)
+                enableWhen(enabledProperty.and(model.valid))
                 isDefaultButton = true
                 useMaxWidth = true
 
                 action {
+                    enabled = false
                     runAsyncWithProgress {
                         model.commit()
                         loginController.register(model.item)
+                        enabled = true
                     }
                 }
             }

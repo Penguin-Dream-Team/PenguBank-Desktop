@@ -12,7 +12,7 @@ import javafx.scene.text.FontWeight
 import tornadofx.*
 import view.dialogs.KeyPasswordDialog
 import view.partials.LogoHeader
-import view.settings.NewTransactionModal
+import view.dialogs.NewTransactionModal
 import tornadofx.getValue
 import tornadofx.setValue
 
@@ -24,6 +24,9 @@ class DashboardView : View("PenguBank | Dashboard") {
 
     val showingTransactionsProperty = SimpleBooleanProperty(true)
     var showingTransactions by showingTransactionsProperty
+
+    private val enabledProperty = SimpleBooleanProperty(true)
+    var enabled by enabledProperty
 
     override val root = borderpane {
         prefWidth = 1080.0
@@ -49,10 +52,12 @@ class DashboardView : View("PenguBank | Dashboard") {
                         alignment = Pos.CENTER
 
                         button("Enable 2FA") {
-                            enableWhen(!store.user.enabled2FA)
+                            enableWhen(enabledProperty.and(!store.user.enabled2FA))
                             action {
+                                enabled = false
                                 runAsyncWithProgress {
                                     activate2FAController.requestActivate2FA()
+                                    enabled = true
                                 }
                             }
                         }
@@ -86,15 +91,20 @@ class DashboardView : View("PenguBank | Dashboard") {
 
                     stackpane {
                         button("Stop Bluetooth Local Server") {
+                            enableWhen(enabledProperty)
                             visibleWhen(store.hasBluetoothConnectionProperty)
                             action {
+                                enabled = false
                                 bluetoothConnectionController.stop()
+                                enabled = true
                             }
                         }
 
                         button("Start Bluetooth Local Server") {
+                            enableWhen(enabledProperty)
                             visibleWhen(!store.hasBluetoothConnectionProperty)
                             action {
+                                enabled = false
                                 runAsyncWithProgress {
                                     bluetoothConnectionController.requestPhonePublicKey()
                                     runLater {
@@ -104,6 +114,7 @@ class DashboardView : View("PenguBank | Dashboard") {
                                             error(bluetoothConnectionController.status)
                                         }
                                     }
+                                    enabled = true
                                 }
                             }
                         }
@@ -170,9 +181,12 @@ class DashboardView : View("PenguBank | Dashboard") {
 
                     hbox(20.0) {
                         button("Refresh") {
+                            enableWhen(enabledProperty)
                             action {
+                                enabled = false
                                 runAsyncWithProgress {
                                     dashboardController.refreshDashboard()
+                                    enabled = true
                                 }
                             }
                         }
@@ -181,21 +195,27 @@ class DashboardView : View("PenguBank | Dashboard") {
                             alignment = Pos.CENTER_LEFT
 
                             button("Show transactions") {
+                                enableWhen(enabledProperty)
                                 visibleWhen(!showingTransactionsProperty)
                                 action {
+                                    enabled = false
                                     runAsyncWithProgress {
                                         dashboardController.refreshDashboard()
                                         showingTransactions = true
+                                        enabled = true
                                     }
                                 }
                             }
 
                             button("Show pending transactions") {
+                                enableWhen(enabledProperty)
                                 visibleWhen(showingTransactionsProperty)
                                 action {
+                                    enabled = false
                                     runAsyncWithProgress {
                                         dashboardController.refreshDashboard()
                                         showingTransactions = false
+                                        enabled = true
                                     }
                                 }
                             }
@@ -208,6 +228,8 @@ class DashboardView : View("PenguBank | Dashboard") {
 
     override fun onDock() {
         showingTransactions = true
+        enabled = false
         dashboardController.refreshDashboard()
+        enabled = true
     }
 }

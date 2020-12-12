@@ -5,7 +5,7 @@ import models.requests.TransactionRequest
 import tornadofx.*
 import utils.safeExecute
 import utils.toEuros
-import view.settings.NewTransactionModal
+import view.dialogs.NewTransactionModal
 
 class DashboardController : Controller() {
     private val api: Rest by inject()

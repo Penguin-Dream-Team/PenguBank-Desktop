@@ -9,5 +9,3 @@ fun Int.toEuros(): String {
     format.currency = Currency.getInstance("EUR")
     return format.format(this)
 }
-
-fun String.euroToInt(): Int = this.filter { it.isDigit() }.toInt()

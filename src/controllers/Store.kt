@@ -7,7 +7,9 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import models.*
 import tornadofx.*
+import view.DashboardView
 import view.userforms.LoginView
+import view.userforms.Verify2FAView
 import java.security.PublicKey
 
 class Store : Controller() {
@@ -50,7 +52,8 @@ class Store : Controller() {
         pendingTransactions.clear()
         hasPendingTransactions = false
 
-        primaryStage.uiComponent<UIComponent>()?.replaceWith<LoginView>(sizeToScene = true, centerOnScreen = true, transition = ViewTransition.FadeThrough(.3.seconds))
+        find<DashboardView>().replaceWith<LoginView>(sizeToScene = true, centerOnScreen = true, transition = ViewTransition.FadeThrough(.3.seconds))
+        find<Verify2FAView>().replaceWith<LoginView>(sizeToScene = true, centerOnScreen = true, transition = ViewTransition.FadeThrough(.3.seconds))
     }
 
 }

@@ -1,6 +1,7 @@
 package view.settings
 
 import controllers.Activate2FAController
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Orientation
 import javafx.geometry.Pos
 import javafx.scene.control.ButtonBar
@@ -13,6 +14,9 @@ import tornadofx.*
 class Enable2FAModal : View("PenguBank | Enable 2FA") {
     private val model = Verify2FARequestModel()
     private val activate2FAController: Activate2FAController by inject()
+
+    private val enabledProperty = SimpleBooleanProperty(true)
+    var enabled by enabledProperty
 
     override val root = borderpane {
         prefWidth = 380.0
@@ -85,13 +89,15 @@ class Enable2FAModal : View("PenguBank | Enable 2FA") {
             }
 
             button("Verify", type = ButtonBar.ButtonData.FINISH) {
-                enableWhen(model.valid)
+                enableWhen(enabledProperty.and(model.valid))
                 isDefaultButton = true
 
                 action {
+                    enabled = false
                     runAsyncWithProgress {
                         model.commit()
                         activate2FAController.confirmActivate2FA(model.item)
+                        enabled = true
                     }
                 }
             }

@@ -24,7 +24,6 @@ abstract class BluetoothService(
         val message = BluetoothMessage(data.toJSON(), securityConnection.signData(data.toJSON()))
         outputStream.writeUTF(message.toJSON())
         outputStream.flush()
-        println("SENT: ${message.data}")
     }
 
     protected fun <T : JSONObject> cipherAndSendMessage(secretKey: SecretKey, data: T) {
@@ -37,7 +36,6 @@ abstract class BluetoothService(
         )
         outputStream.writeUTF(message.toJSON())
         outputStream.flush()
-        println("SENT: ${message.data}")
     }
 
     protected fun receiveAndDecipherMessage(secretKey: SecretKey): JSONObject {
@@ -62,7 +60,6 @@ abstract class BluetoothService(
         if (receivedData.id == 0)
             return RetrievePendingTransactionsRequest(receivedData.nonce)
 
-        println("RECEIVED: ${message.data}")
         return receivedData
     }
 
@@ -70,8 +67,6 @@ abstract class BluetoothService(
         val message = inputStream.readUTF().toObject<BluetoothMessage>()
         if (!securityConnection.verifySignature(message.data, message.signature))
             throw BluetoothMessageSignatureFailedException
-
-        println("RECEIVED: ${message.data}")
 
         return message.data.toObject()
     }

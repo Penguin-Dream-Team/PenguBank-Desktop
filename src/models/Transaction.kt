@@ -4,6 +4,8 @@ import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
+import utils.toEuros
+import utils.toPrettyDate
 import javax.json.JsonObject
 
 class Transaction : JsonModel {
@@ -33,9 +35,8 @@ class Transaction : JsonModel {
         }
     }
 
-    override fun toString() = "Transaction #$id | ${
-        if (type == TransactionType.RECEIVED) "From" else "To"
-    }: $other | Amount: $amount | Date: $createdAt"
+    override fun toString() =
+        "${if (type == TransactionType.RECEIVED) "From" else "To"}: $other | Amount: ${amount.toEuros()} | Date: ${createdAt.toPrettyDate()}"
 
     override fun toJSON(json: JsonBuilder) {
         with(json) {
